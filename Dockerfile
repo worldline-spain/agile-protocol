@@ -19,5 +19,5 @@ COPY requirements.txt requirements.txt
 
 RUN python3 -m pip install -r requirements.txt
 
-COPY dbus_protocol dbus_protocol
+COPY dbus_protocols dbus_protocols
 
