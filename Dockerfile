@@ -1,4 +1,4 @@
-FROM resin/raspberrypi2-debian:jessie-20161010
+FROM resin/raspberrypi3-python
 
 # Install dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
