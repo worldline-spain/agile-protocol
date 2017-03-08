@@ -21,3 +21,6 @@ RUN python3 -m pip install -r requirements.txt
 
 COPY dbus_protocols dbus_protocols
 
+COPY dbus_server.py dbus_server.py
+
+CMD ./dbus_server.py
