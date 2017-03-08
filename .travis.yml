@@ -16,7 +16,7 @@ env:
   matrix:
     - IMAGE=agileiot/$COMPONENT-armv7l
     - IMAGE=agileiot/$COMPONENT-x86_64
-      BASEIMAGE=resin\\/nuc-debian:jessie
+      BASEIMAGE=resin\\/nuc-python
 
 before_install:
   - if [ -f $DOCKER_CACHE_FILE ]; then
