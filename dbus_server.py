@@ -63,10 +63,10 @@ class DBusExit(dbus.service.Object):
 # --- Functions ---------
 def dbusService():
    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-   dbe = DBusExit()
-   xb1 = xb_802.XBee_802_15_4()
+   #dbe = DBusExit()
+   #xb1 = xb_802.XBee_802_15_4()
    xb2 = xb_zb.XBee_ZigBee()
-   lw = lorawan.LoRaWAN()
+   #lw = lorawan.LoRaWAN()
    logger.info("Running DBus service.")
    try:
       mainloop.run()

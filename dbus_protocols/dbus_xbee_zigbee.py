@@ -42,7 +42,7 @@ PROTOCOL_NAME = "XBee_ZigBee"
 BAUDRATE = "baudrate"
 DEF_BAUDRATE = 9600
 APIMODE2 = "apiMode2"
-DEF_APIMODE2 = False
+DEF_APIMODE2 = True
 ATCMDS = "atCmds"
 APITXCMDS = ["at", "queued_at", "remote_at", "tx_long_addr", "tx", "tx_explicit"]
 CMDWRITE = b"WR"
@@ -76,8 +76,8 @@ class XBee_ZigBee_Obj(dbP.ProtocolObj):
       }
 
    # Override DBus object methods
-   @dbus.service.method(db_cons.BUS_NAME, in_signature="", out_signature="")
-   def Connect(self):
+   @dbus.service.method(db_cons.BUS_NAME, in_signature="s", out_signature="")
+   def Connect(self, deviceId):
       if self._getConnected():
          raise XBee_ZigBee_Exception("Module is already connected.")
       self._serial = serial.Serial(self._getSocketDev(self._socket), self._setup[BAUDRATE])
@@ -160,6 +160,22 @@ class XBee_ZigBee_Obj(dbP.ProtocolObj):
          for byte in rx[key]:
             result[key].append(byte)
       return dbus.Dictionary(result, signature="sv")
+  
+   @dbus.service.method(db_cons.BUS_NAME, in_signature="sa{sv}", out_signature="ay")
+   def Read(self,deviceId, args):       
+       if not self._getConnected():
+           raise XBee_ZigBee_Exception("Module is not connected.")     
+       rx = self._module.wait_read_frame()
+       result = {}
+       for key in rx.keys():
+           result[key] = []
+           for byte in rx[key]:
+               result[key].append(byte)
+       return  result["rf_data"]
+  
+   @dbus.service.method(db_cons.BUS_NAME, in_signature="a{sv}", out_signature="") 
+   def Discover(self, args):
+      self._logger.log("test")
 # -----------------------
 
 
