@@ -34,9 +34,9 @@ import dbus
 import dbus.service
 import dbus.mainloop.glib
 from dbus_protocols import dbus_protocol as dbP
-from dbus_protocols import dbus_xbee_802_15_4 as xb_802
+##from dbus_protocols import dbus_xbee_802_15_4 as xb_802
 from dbus_protocols import dbus_xbee_zigbee as xb_zb
-from dbus_protocols import dbus_lorawan as lorawan
+##from dbus_protocols import dbus_lorawan as lorawan
 from dbus_protocols import dbus_constants as db_cons
 import logging
 # -----------------------
@@ -64,9 +64,9 @@ class DBusExit(dbus.service.Object):
 def dbusService():
    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
    #dbe = DBusExit()
-   #xb1 = xb_802.XBee_802_15_4()
+   ##xb1 = xb_802.XBee_802_15_4()
    xb2 = xb_zb.XBee_ZigBee()
-   #lw = lorawan.LoRaWAN()
+   ##lw = lorawan.LoRaWAN()
    logger.info("Running DBus service.")
    try:
       mainloop.run()

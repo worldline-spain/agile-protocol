@@ -34,6 +34,10 @@ from dbus_protocols import dbus_constants as db_cons
 import logging
 import serial
 import xbee
+
+import struct
+import time
+
 # -----------------------
 
 
@@ -74,14 +78,29 @@ class XBee_ZigBee_Obj(dbP.ProtocolObj):
          APIMODE2: DEF_APIMODE2,
          ATCMDS: []
       }
+      self._last_read_for_device = dict()
 
+   def async_data_callback(self, data):
+      hex_long_addr = format(struct.unpack(">Q", data["source_addr_long"])[0], '016x')
+      str_tstamp = time.strftime('%Y-%m-%d %H:%M:%S')
+      # decode received data with the format SensorNum - SensorType - SensorVal - Counter (01-Motion-ON-0)
+      raw_sensor_data = data["rf_data"].decode("utf-8").split("-")
+      sensor_num = raw_sensor_data[0]
+      sensor_type = raw_sensor_data[1]
+      sensor_val = raw_sensor_data[2]
+      full_sensor_address = hex_long_addr + "." + sensor_num
+      
+      rec_data = dict(sensor_num=sensor_num,sensor_type=sensor_type,sensor_val=sensor_val, tstamp=str_tstamp)
+      self._last_read_for_device[full_sensor_address] = rec_data
+      # print("async_data_callback ", full_sensor_address, " - ", str_tstamp)
+       
    # Override DBus object methods
    @dbus.service.method(db_cons.BUS_NAME, in_signature="s", out_signature="")
    def Connect(self, deviceId):
       if self._getConnected():
          raise XBee_ZigBee_Exception("Module is already connected.")
       self._serial = serial.Serial(self._getSocketDev(self._socket), self._setup[BAUDRATE])
-      self._module = xbee.ZigBee(self._serial, escaped=self._setup[APIMODE2])
+      self._module = xbee.ZigBee(self._serial, escaped=self._setup[APIMODE2], callback=self.async_data_callback)
       writeChanges = False
       for option in self._setup[ATCMDS]:
          cmd = list(option.keys())[0]
@@ -161,18 +180,30 @@ class XBee_ZigBee_Obj(dbP.ProtocolObj):
             result[key].append(byte)
       return dbus.Dictionary(result, signature="sv")
   
-   @dbus.service.method(db_cons.BUS_NAME, in_signature="sa{sv}", out_signature="ay")
-   def Read(self,deviceId, args):       
+   @dbus.service.method(db_cons.BUS_NAME, in_signature="s", out_signature="s")
+   def Read(self, deviceId):
        if not self._getConnected():
-           raise XBee_ZigBee_Exception("Module is not connected.")     
-       rx = self._module.wait_read_frame()
-       result = {}
-       for key in rx.keys():
-           result[key] = []
-           for byte in rx[key]:
-               result[key].append(byte)
-       return  result["rf_data"]
+           raise XBee_ZigBee_Exception("Module is not connected.")
+
+       rdata = ""
+       if isinstance(deviceId, str) and deviceId.lower() in self._last_read_for_device:
+          rdata = '{"deviceId":"'+deviceId+'","sensor_type":"'+self._last_read_for_device[deviceId]['sensor_type']+'","sensor_val":"'+self._last_read_for_device[deviceId]['sensor_val']+'","tstamp":"'+self._last_read_for_device[deviceId]['tstamp']+'"}'
+
+       return rdata
   
+   @dbus.service.method(db_cons.BUS_NAME, in_signature="ss", out_signature="s")
+   def Write(self, deviceId, value):
+       if not self._getConnected():
+           raise XBee_ZigBee_Exception("Module is not connected.")
+       rdata = ""
+
+       print(deviceId, "-", value)
+           
+       self._module.send("tx", dest_addr_long=bytearray.fromhex(deviceId), data=bytearray(value,"ascii"))
+       
+       return rdata
+
+   
    @dbus.service.method(db_cons.BUS_NAME, in_signature="a{sv}", out_signature="") 
    def Discover(self, args):
       self._logger.log("test")
