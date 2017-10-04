@@ -1,0 +1,175 @@
+[{
+		"id": "ba66830f.f355b",
+		"type": "tab",
+		"label": "Flow 1"
+	}, {
+		"id": "200cd494.b7996c",
+		"type": "agile-device-read",
+		"z": "ba66830f.f355b",
+		"server": "5687ca20.0bb5d4",
+		"name": "Read Presence",
+		"deviceId": "xbee_zigbee0013a20040f9a03c",
+		"componentId": "PRESENCE",
+		"interval": "3",
+		"x": 97,
+		"y": 95,
+		"wires": [["6ab8daeb.58e774", "1af36e46.2d56c2"]]
+	}, {
+		"id": "6ab8daeb.58e774",
+		"type": "debug",
+		"z": "ba66830f.f355b",
+		"name": "log message",
+		"active": true,
+		"console": "false",
+		"complete": "true",
+		"x": 302,
+		"y": 36,
+		"wires": []
+	}, {
+		"id": "dc147926.eba5e8",
+		"type": "ui_text",
+		"z": "ba66830f.f355b",
+		"group": "604bdc8b.ede7b4",
+		"order": 0,
+		"width": "8",
+		"height": "1",
+		"name": "Display value",
+		"label": "Read value:",
+		"format": "{{msg.payload.value}}",
+		"layout": "row-left",
+		"x": 519,
+		"y": 91,
+		"wires": []
+	}, {
+		"id": "1af36e46.2d56c2",
+		"type": "json",
+		"z": "ba66830f.f355b",
+		"name": "Message parser",
+		"x": 308,
+		"y": 157,
+		"wires": [["dc147926.eba5e8", "cff0ab6c.0e0448", "f5fcc2f1.77e86"]]
+	}, {
+		"id": "cff0ab6c.0e0448",
+		"type": "function",
+		"z": "ba66830f.f355b",
+		"name": "CountChanges",
+		"func": "var count = flow.get('count') || 0;\nvar old_val = flow.get('old_val') || '';\nif (old_val == msg.payload.value) {\n    msg.presence = false;\n    msg.count = count;\n} else {\n    msg.presence = true;\n    count++;\n    msg.count = count;\n    flow.set('old_val', msg.payload.value);\n    flow.set('count', count);\n}\n\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 523,
+		"y": 151,
+		"wires": [["383e500f.f594c"]]
+	}, {
+		"id": "383e500f.f594c",
+		"type": "ui_template",
+		"z": "ba66830f.f355b",
+		"group": "604bdc8b.ede7b4",
+		"name": "Show changes",
+		"order": 0,
+		"width": "10",
+		"height": "1",
+		"format": "<div layout=\"row\" layout-align=\"space-between\">\n    <span ng-style=\"{color: msg.presence ? 'green' : 'red'}\">\n        <p>The Presence count is <b>{{msg.count}}</b></p>\n    </span>\n</div>\n",
+		"storeOutMessages": false,
+		"fwdInMessages": false,
+		"x": 609,
+		"y": 209,
+		"wires": [[]]
+	}, {
+		"id": "27ae99ae.c4d5a6",
+		"type": "rbe",
+		"z": "ba66830f.f355b",
+		"name": "Detect changes",
+		"func": "rbe",
+		"gap": "",
+		"start": "",
+		"inout": "out",
+		"x": 576,
+		"y": 366,
+		"wires": [["a090342.87f81c8"]]
+	}, {
+		"id": "a090342.87f81c8",
+		"type": "trigger",
+		"z": "ba66830f.f355b",
+		"op1": "ON",
+		"op2": "OFF",
+		"op1type": "str",
+		"op2type": "str",
+		"duration": "500",
+		"extend": false,
+		"units": "ms",
+		"reset": "",
+		"name": "",
+		"x": 627,
+		"y": 421,
+		"wires": [["93d6f993.2fca38"]]
+	}, {
+		"id": "f5fcc2f1.77e86",
+		"type": "function",
+		"z": "ba66830f.f355b",
+		"name": "Extract value",
+		"func": "msg.payload = msg.payload.value;\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 522,
+		"y": 297,
+		"wires": [["27ae99ae.c4d5a6", "dccdaab2.68a1e8"]]
+	}, {
+		"id": "93d6f993.2fca38",
+		"type": "ui_template",
+		"z": "ba66830f.f355b",
+		"group": "604bdc8b.ede7b4",
+		"name": "Presence indicator",
+		"order": 0,
+		"width": 0,
+		"height": 0,
+		"format": "<div layout=\"row\" layout-align=\"space-between\">\n    <div style=\"padding: 5px 10px 5px 10px; border-radius: 5px;\"\n         ng-style=\"{'background-color': msg.payload === 'ON' ? 'green' : 'red', 'color': msg.payload === 'ON' ? 'black' : 'white'}\">\n        <p><b>Presence</b></p>\n    </div>\n</div>\n",
+		"storeOutMessages": false,
+		"fwdInMessages": false,
+		"x": 693,
+		"y": 480,
+		"wires": [[]]
+	}, {
+		"id": "dccdaab2.68a1e8",
+		"type": "json",
+		"z": "ba66830f.f355b",
+		"name": "Parse value",
+		"x": 765,
+		"y": 298,
+		"wires": [["811a5bfc.1a49c8"]]
+	}, {
+		"id": "811a5bfc.1a49c8",
+		"type": "ui_text",
+		"z": "ba66830f.f355b",
+		"group": "604bdc8b.ede7b4",
+		"order": 0,
+		"width": 0,
+		"height": 0,
+		"name": "",
+		"label": "Parsed value",
+		"format": "{{msg.payload.type}} - {{msg.payload.data.value}} - {{msg.payload.data.date}}",
+		"layout": "row-left",
+		"x": 836,
+		"y": 357,
+		"wires": []
+	}, {
+		"id": "5687ca20.0bb5d4",
+		"type": "agile-config-server",
+		"z": "",
+		"host": "agile",
+		"port": "8080"
+	}, {
+		"id": "604bdc8b.ede7b4",
+		"type": "ui_group",
+		"z": "",
+		"name": "Presence Sensor Test",
+		"tab": "2bc283db.d0857c",
+		"disp": true,
+		"width": "10"
+	}, {
+		"id": "2bc283db.d0857c",
+		"type": "ui_tab",
+		"z": "",
+		"name": "Home",
+		"icon": "dashboard"
+	}
+]
