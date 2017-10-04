@@ -37,6 +37,7 @@ import xbee
 
 import struct
 import time
+import json
 
 # -----------------------
 
@@ -85,21 +86,22 @@ class XBee_ZigBee_Obj(dbP.ProtocolObj):
       str_tstamp = time.strftime('%Y-%m-%d %H:%M:%S')
 
       # decode received data with the format SensorNum - SensorType - SensorVal - Counter (01-Motion-ON-0)
-      raw_sensor_data = data["rf_data"].decode("utf-8").split("-")
-      sensor_num = raw_sensor_data[0]
-      sensor_type = raw_sensor_data[1]
-      sensor_val = raw_sensor_data[2]
-      
-      # print("async_data_callback ", hex_long_addr, " sensor_num ", sensor_num, " sensor_type ", sensor_type, " sensor_val ", sensor_val, " str_tstamp ", str_tstamp)
-      
-      sensor_data = dict(sensor_num=sensor_num, sensor_type=sensor_type, sensor_val=sensor_val, tstamp=str_tstamp)
-      
+      raw_sensor_data = data["rf_data"].decode("utf-8")
+      #raw_sensor_data = raw_sensor_data.replace("PUT_DATE", str_tstamp)
+      cooked_data = json.loads(raw_sensor_data)
+      cooked_data["data"]["date"] = str_tstamp
+      sensor_type = cooked_data["type"]
+      cooked_data["id"] = hex_long_addr + "_" + sensor_type
+      print("raw_sensor_data", raw_sensor_data, " -> ", cooked_data)
+
       if hex_long_addr in self._last_read_for_device: 
          device_data = self._last_read_for_device[hex_long_addr]
       else:
          device_data = dict()
-         
-      device_data[sensor_num] = sensor_data
+
+      device_data[sensor_type] = json.dumps(cooked_data)
+      
+      #device_data[sensor_num] = sensor_data
       self._last_read_for_device[hex_long_addr] = device_data
        
    # Override DBus object methods
@@ -200,13 +202,14 @@ class XBee_ZigBee_Obj(dbP.ProtocolObj):
           if isinstance(sensorName, str) and sensorName in self._last_read_for_device[deviceId]:
              # for key, val in self._last_read_for_device[deviceId].items():
              # rdata += '{"deviceId":"'+deviceId+'","sensor_type":"'+val['sensor_type']+'","sensor_val":"'+val['sensor_val']+'","tstamp":"'+val['tstamp']+'"}'
-             rdata = (self._last_read_for_device[deviceId][sensorName]['sensor_type'] +
-                      "," + 
-                      self._last_read_for_device[deviceId][sensorName]['sensor_val'] +
-                      "," +
-                      self._last_read_for_device[deviceId][sensorName]['tstamp'])
+             
+             #rdata = (self._last_read_for_device[deviceId][sensorName]['sensor_type'] +
+             #         "," + 
+             #         self._last_read_for_device[deviceId][sensorName]['sensor_val'] +
+             #         "," +
+             #         self._last_read_for_device[deviceId][sensorName]['tstamp'])
+             rdata = self._last_read_for_device[deviceId][sensorName]
        #print("--- Read device=", deviceId, " sensor=", sensorName, " rdata=", rdata)
-
        return bytearray(rdata, "ascii")
   
    @dbus.service.method(db_cons.BUS_NAME, in_signature="ss", out_signature="")
