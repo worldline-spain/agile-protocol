@@ -2,6 +2,7 @@ const agileSDK = require('agile-sdk');
 const Promise = require('promise');
 const _ = require('underscore');
 const request = require('request');
+const moment = require('moment');
 
 const CONSTANTS = {
     API: 'http://10.130.2.31:8080',
@@ -35,14 +36,19 @@ const CONSTANTS = {
     ],
     DEVICE_TYPE: 'ARDUINO',
     INPUT_SENSOR_METRIC: {
-        xbee_zigbee0013a20040e7d747: ["temperature", "stock"],
-        xbee_zigbee0013a20040f9a03c: ["presence"]
+        xbee_zigbee0013a20040e7d747: ['temperature', 'stock'],
+        xbee_zigbee0013a20040f9a03c: ['presence']
     },
     ALERT_SENSOR: {
         id: "0013a2004155bedb"
     },
     SCREEN_DISPLAY: {
         id: "0013a20040e7d742"
+    },
+    METRICS: {
+        TEMPERATURE: 'temperature',
+        STOCK: 'stock',
+        PRESENCE: 'presence'
     }
 };
 
@@ -50,13 +56,14 @@ const agile = agileSDK({
     api: CONSTANTS.API
 });
 
+let lastMetricPresence = moment();
+
 initialize();
 
 function initialize() {
     Promise.all(createDevices()).then(() => {
         getDevices().then((idDevices) => {
             getDataDevices(idDevices);
-            setInterval(() => getDataDevices(idDevices), 1000);
         }, () => {
             console.log('ERROR: Getting devices, re-trying create in 60 seconds...');
             setTimeout(initialize, 60000); // 60sec
@@ -104,16 +111,32 @@ function getDataDevices(idDevices) {
     idDevices.forEach(idDevice => {
         let arrayMetric = CONSTANTS.INPUT_SENSOR_METRIC[idDevice];
         arrayMetric.forEach(metric => {
-            agile.device.get(idDevice, metric).then(function (deviceComponent) {
-                console.log(deviceComponent);
-                sendScreen(JSON.parse(deviceComponent.value));
-            });
+            if (metric === CONSTANTS.METRICS.TEMPERATURE) {
+                setInterval(() => _getData(idDevice, metric), 5000); // wait 5 sec for temperature metrics
+            } else {
+                setInterval(() => _getData(idDevice, metric), 2000);
+                _getData(idDevice, metric);
+            }
         });
     });
 }
 
+function _getData(idDevice, metric) {
+    agile.device.get(idDevice, metric).then(function (deviceComponent) {
+        let objectBody = JSON.parse(deviceComponent.value)
+        sendScreen(objectBody);
+        if (metric === CONSTANTS.METRICS.PRESENCE) {
+            let currentDateMetric = moment(new Date(objectBody.data.date));
+            if (currentDateMetric.isAfter(lastMetricPresence)) {
+                sendAlert();
+                lastMetricPresence = currentDateMetric;
+            }
+        }
+    });
+}
+
 function sendAlert() {
-    _write(CONSTANTS.ALERT_SENSOR.id,{}).then(() => {
+    _write(CONSTANTS.ALERT_SENSOR.id, "{}").then(() => {
         console.log('INFO: Alert send.');
     }, () => {
         console.log('ERROR: cannot send the message to the device.');
@@ -121,9 +144,7 @@ function sendAlert() {
 }
 
 function sendScreen(data) {
-    _write(CONSTANTS.SCREEN_DISPLAY.id, data).then(() => {
-        console.log('INFO: Metric send.');
-    }, () => {
+    _write(CONSTANTS.SCREEN_DISPLAY.id, data).catch(() => {
         console.log('ERROR: cannot send the message to the device.');
     })
 }
@@ -135,13 +156,13 @@ function _write(idDevice, data) {
             headers: CONSTANTS.HEADERS,
             body: JSON.stringify(data)
         }
-        
+
         request.post(options, (error, response, body) => {
-            if(error) {
+            if (error) {
                 reject();
             } else {
                 resolve();
             }
         })
-    });    
+    });
 }
