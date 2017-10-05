@@ -34,11 +34,11 @@ SOCKET1 = "socket1"
 try:
    import RPi.GPIO as GPIO
    if GPIO.RPI_INFO["TYPE"] == "Pi 3 Model B":
-      SOCKET0DEV = "/dev/ttyS0"
-      SOCKET1DEV = "/dev/ttyS0"
+      SOCKET0DEV = "/dev/ttyUSB0"
+      SOCKET1DEV = "/dev/ttyUSB0"
    else:
-      SOCKET0DEV = "/dev/ttyAMA0"
-      SOCKET1DEV = "/dev/ttyAMA0"
+      SOCKET0DEV = "/dev/ttyUSB0"
+      SOCKET1DEV = "/dev/ttyUSB0"
 except:
    SOCKET0DEV = "/dev/ttyUSB0"
    SOCKET1DEV = "/dev/ttyUSB1"
