@@ -136,9 +136,9 @@ void processCurrentWord() {
     String deviceMinor = "0x"+deviceString.substring(54,58);
     String deviceMeasuredPower = "0x"+ deviceString.substring(58,60);
 
-    int major = (int)strtol(deviceMajor.c_str(), NULL, 0);
-    int minor = (int)strtol(deviceMinor.c_str(), NULL, 0);
-    signed char mp = (int)strtol(deviceMeasuredPower.c_str(), NULL, 0);
+    unsigned long major = strtol(deviceMajor.c_str(), NULL, 0);
+    unsigned long minor = strtol(deviceMinor.c_str(), NULL, 0);
+    signed char mp = (signed char)strtol(deviceMeasuredPower.c_str(), NULL, 0);
 
     
     String deviceId = deviceString.substring(17,49);
@@ -174,7 +174,7 @@ boolean checkCharBuffer(char cadena[],char caracter,int start_idx, int end_idx){
   return checkResult;
 }
 
-void createDataMessage(String deviceId,int major ,int minor,signed char mp,int rssi) {
+void createDataMessage(String deviceId,unsigned long  major ,unsigned long  minor,signed char mp,int rssi) {
  
   String message = "{\"type\":\"beacon\",\"data\":{ \"date\":\"PUT_DATE\",\"value\":{\"ibeaconid\":\""+deviceId+"\",\"rssi\":"+ rssi+",\"major\":"+ major+",\"minor\":"+ minor+",\"measuredpower\":"+ mp+"  }  }}";
   
