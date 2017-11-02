@@ -29,7 +29,7 @@ int no_read_loop =0;
 XBee xbee = XBee();
 
 SoftwareSerial sw(7,8);
-SoftwareSerial sw2(3,4);
+SoftwareSerial sw2(4,3);
 
 void setup() {
   Serial.begin(9600);
