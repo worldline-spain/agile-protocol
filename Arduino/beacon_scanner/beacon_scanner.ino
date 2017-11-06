@@ -28,8 +28,8 @@ int no_read_loop =0;
 
 XBee xbee = XBee();
 
-SoftwareSerial sw(7,8);
-SoftwareSerial sw2(4,3);
+SoftwareSerial sw(9,11);
+SoftwareSerial sw2(5,7);
 
 void setup() {
   Serial.begin(9600);
@@ -175,8 +175,8 @@ boolean checkCharBuffer(char cadena[],char caracter,int start_idx, int end_idx){
 }
 
 void createDataMessage(String deviceId,unsigned long  major ,unsigned long  minor,signed char mp,int rssi) {
- 
-  String message = "{\"type\":\"beacon\",\"data\":{ \"date\":\"PUT_DATE\",\"value\":{\"ibeaconid\":\""+deviceId+"\",\"rssi\":"+ rssi+",\"major\":"+ major+",\"minor\":"+ minor+",\"measuredpower\":"+ mp+"  }  }}";
+   
+  String message = "{\"type\":\"beacon\",\"data\":{\"date\":\"PUT_DATE\",\"value\":{\"ibeaconid\":\""+ deviceId +"\",\"rssi\":"+ rssi +",\"major\":"+ major+",\"minor\":"+ minor+",\"measuredpower\":"+mp+"}}} ";
   
   Serial.println(message );               
   sendMessage(message);
@@ -188,9 +188,9 @@ void sendMessage(String message) {
   XBeeAddress64 addr64 = XBeeAddress64(XBEE_SH, XBEE_SL);
 
   // Create a TX Request
-  char dataArray[message.length()];
-  message.toCharArray(dataArray, message.length());
-  ZBTxRequest zbTx = ZBTxRequest(addr64, (uint8_t *)dataArray, sizeof(dataArray));
+  uint8_t dataArray[message.length()+1];
+  message.toCharArray(dataArray, message.length()+1);
+  ZBTxRequest zbTx = ZBTxRequest(addr64, dataArray, message.length());
 
   // Send
   xbee.send(zbTx);
