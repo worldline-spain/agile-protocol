@@ -1,12 +1,14 @@
+#include <SoftwareSerial.h>
+
 // Includes
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <XBee.h>
 
 // Defines
-#define Pin 2
-#define Trigger 7
-#define Input 8  //Echo output
+#define TemperaturePin 2
+#define Trigger 5
+#define Echo 7  //Echo output
 
 #define SOUND_VEL 0.0343 //sound velocity
 
@@ -14,15 +16,15 @@
 #define PRESENCE "presence"
 
 // Xbee custom (Z4)
-#define XBEE_SH 0x0013A200
-#define XBEE_SL 0x40E7D742
+//#define XBEE_SH 0x0013A200
+//#define XBEE_SL 0x40E7D742
 
 // Xbee concentrator
-//#define XBEE_SH 0x00000000
-//#define XBEE_SL 0x00000000
+#define XBEE_SH 0x00000000
+#define XBEE_SL 0x00000000
 
 //Constructors
-OneWire ourWire(Pin);
+OneWire ourWire(TemperaturePin);
 DallasTemperature sensors(&ourWire);
 XBee xbee = XBee();
 
@@ -30,12 +32,14 @@ XBee xbee = XBee();
 long responseTime;
 float distance;
 
+SoftwareSerial sw(2,3);
+
 //Setup -> only executed 1 time
 void setup() {
   pinMode(Trigger, OUTPUT);
-  pinMode(Input, INPUT);
-
-  xbee.setSerial(Serial);
+  pinMode(Echo, INPUT);
+  sw.begin(9600);
+  xbee.setSerial(sw);
 
   Serial.begin(9600);
 
@@ -46,7 +50,7 @@ void setup() {
 //Main -> infinite loop;
 void loop() {
   distanceSensorMetric();
-  temperatureSensorMetric();
+  //temperatureSensorMetric();
 
   // Generate metric every second.
   delay(1000);
@@ -60,7 +64,7 @@ void distanceSensorMetric() {
   digitalWrite(Trigger, LOW);
 
   // Calculate the distancen with the response time.
-  responseTime = (pulseIn(Input, HIGH) / 2);
+  responseTime = (pulseIn(Echo, HIGH) / 2);
   distance = float(responseTime * SOUND_VEL);
 
   // Create distance message
@@ -76,11 +80,8 @@ void temperatureSensorMetric() {
 }
 
 void createDataMessage(float metricValue, String type) {
-  String message = "{" +
-                   "\"type\":" + "\"" + type + "\"," +
-                   "\"data\":" + "{" +
-                   "\"date\":" + "\"PUT_DATE\"," +
-                   "\"value\":" + metricValue + "}" + "}" + "}";
+  String message = "{\"type\":\""+type+"\",\"data\":{\"date\":\"PUT_DATE\",\"value\":" + metricValue + "} }" + "}";
+  Serial.println(message);                   
   sendMessage(message);
 
 }
@@ -90,9 +91,9 @@ void sendMessage(String message) {
   XBeeAddress64 addr64 = XBeeAddress64(XBEE_SH, XBEE_SL);
 
   // Create a TX Request
-  uint8_t dataArray[message.length()];
-  message.toCharArray(dataArray, message.length());
-  ZBTxRequest zbTx = ZBTxRequest(addr64, dataArray, sizeof(dataArray));
+  uint8_t dataArray[message.length()+1];
+  message.toCharArray(dataArray, message.length()+1);
+  ZBTxRequest zbTx = ZBTxRequest(addr64, dataArray, message.length());
 
   // Send
   xbee.send(zbTx);
