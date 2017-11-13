@@ -80,7 +80,7 @@ void temperatureSensorMetric() {
 }
 
 void createDataMessage(float metricValue, String type) {
-  String message = "{\"type\":\""+type+"\",\"data\":{\"date\":\"PUT_DATE\",\"value\":" + metricValue + "} }" + "}";
+  String message = "{\"type\":\""+type+"\",\"data\":{\"date\":\"PUT_DATE\",\"value\":" + metricValue + "} }";
   Serial.println(message);                   
   sendMessage(message);
 
