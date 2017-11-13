@@ -13,7 +13,7 @@
 #define SOUND_VEL 0.0343 //sound velocity
 
 #define TEMPERATURE "temperature"
-#define PRESENCE "presence"
+#define STOCK "stock"
 
 // Xbee custom (Z4)
 //#define XBEE_SH 0x0013A200
@@ -68,7 +68,7 @@ void distanceSensorMetric() {
   distance = float(responseTime * SOUND_VEL);
 
   // Create distance message
-  createDataMessage(distance, PRESENCE);
+  createDataMessage(distance, STOCK);
 }
 
 void temperatureSensorMetric() {
