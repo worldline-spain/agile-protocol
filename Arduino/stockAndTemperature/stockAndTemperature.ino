@@ -4,6 +4,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <XBee.h>
+#include <LowPower.h>
 
 // Defines
 #define TemperaturePin 2
@@ -32,6 +33,8 @@ XBee xbee = XBee();
 long responseTime;
 float distance;
 
+int sleepCount=0;
+
 SoftwareSerial sw(2,3);
 
 //Setup -> only executed 1 time
@@ -49,11 +52,20 @@ void setup() {
 
 //Main -> infinite loop;
 void loop() {
-  distanceSensorMetric();
-  //temperatureSensorMetric();
-
-  // Generate metric every second.
   delay(1000);
+  if (sleepCount==0 ){
+    
+    distanceSensorMetric();
+    //temperatureSensorMetric();
+    sleepCount=2;
+  }
+  else {
+    //Serial.println("sleep....");
+    sleepCount--;
+    LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); 
+   
+   }
+
 }
 
 void distanceSensorMetric() {
