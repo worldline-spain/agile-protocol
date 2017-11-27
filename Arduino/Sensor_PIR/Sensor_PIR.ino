@@ -20,12 +20,13 @@ SoftwareSerial sw(XBEE_OUT,XBEE_IN);
 void blink() 
 {  
   alarmState=true;
+
 }
 
 void setup() {
     
-      pinMode(XBEE_WAKE, INPUT); // put pin in a high impedence state
-      digitalWrite(XBEE_WAKE, HIGH);
+//      pinMode(XBEE_WAKE, INPUT); // put pin in a high impedence state
+//      digitalWrite(XBEE_WAKE, HIGH);
       
       pinMode(PIR_PIN, INPUT); 
       attachInterrupt(digitalPinToInterrupt(PIR_PIN), blink, RISING );  
@@ -33,6 +34,7 @@ void setup() {
       // XBee
       sw.begin(9600);
       xbee.setSerial(sw);
+
 }
 
 void loop() {
@@ -62,10 +64,11 @@ void sendIRDetection(int value, String type) {
   // wake up the XBee
   pinMode(XBEE_WAKE, OUTPUT);
   digitalWrite(XBEE_WAKE, LOW);
-  delay(2000);
+  delay(1000);
   // Send
   xbee.send(zbTx);
-  delay(2000);
+ 
+//  delay(1000);
   // put the XBee to sleep
   pinMode(XBEE_WAKE, INPUT); // put pin in a high impedence state
   digitalWrite(XBEE_WAKE, HIGH);
