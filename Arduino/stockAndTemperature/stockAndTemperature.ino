@@ -7,13 +7,16 @@
 #include <LowPower.h>
 
 // Defines
-#define TemperaturePin 2
+#define TemperaturePin 9
+#define LDRPin A6
+#define XBEE_WAKE  4
 #define Trigger 5
 #define Echo 7  //Echo output
 
 #define SOUND_VEL 0.0343 //sound velocity
 
 #define TEMPERATURE "temperature"
+#define LIGHT "light"
 #define STOCK "stock"
 
 // Xbee custom (Z4)
@@ -54,9 +57,11 @@ void setup() {
 void loop() {
   delay(1000);
   if (sleepCount==0 ){
-    
+    wakeupXbee();
     distanceSensorMetric();
-    //temperatureSensorMetric();
+    temperatureSensorMetric();
+    ldrSensorMetric();
+    sleepXbee();
     sleepCount=2;
   }
   else {
@@ -66,6 +71,21 @@ void loop() {
    
    }
 
+}
+
+void wakeupXbee() {
+  pinMode(XBEE_WAKE, OUTPUT);
+  digitalWrite(XBEE_WAKE, LOW);
+  delay(1000);
+}
+
+void sleepXbee() {
+  pinMode(XBEE_WAKE, INPUT); // put pin in a high impedence state
+  digitalWrite(XBEE_WAKE, HIGH);
+}
+
+void ldrSensorMetric(){
+ createDataMessage(analogRead(LDRPin), LIGHT);
 }
 
 void distanceSensorMetric() {
