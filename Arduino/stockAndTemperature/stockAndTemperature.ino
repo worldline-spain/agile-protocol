@@ -47,7 +47,7 @@ void setup() {
   sw.begin(9600);
   xbee.setSerial(sw);
 
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
   sensors.begin();
 
@@ -59,15 +59,15 @@ void loop() {
   if (sleepCount==0 ){
     wakeupXbee();
     distanceSensorMetric();
-    temperatureSensorMetric();
-    ldrSensorMetric();
+   // temperatureSensorMetric();
+   // ldrSensorMetric();
     sleepXbee();
-    sleepCount=2;
+    sleepCount=1;
   }
   else {
     //Serial.println("sleep....");
     sleepCount--;
-    LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); 
+    LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_OFF); 
    
    }
 
@@ -113,7 +113,7 @@ void temperatureSensorMetric() {
 
 void createDataMessage(float metricValue, String type) {
   String message = "{\"type\":\""+type+"\",\"data\":{\"date\":\"PUT_DATE\",\"value\":" + metricValue + "} }";
-  Serial.println(message);                   
+ // Serial.println(message);                   
   sendMessage(message);
 
 }

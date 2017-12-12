@@ -1,33 +1,27 @@
+#include <SoftwareSerial.h>
 #include <XBee.h>
 
-#define lowestPinLed 2
-#define highestPinLed 4
-#define buzzer 8
+
+#define buzzer 12
 
 // Constructors
 XBee xbee = XBee();
-
+SoftwareSerial sw(10,9);
 void setup() {
-  // put your setup code here, to run once:
-  for (int thisPin = lowestPinLed; thisPin <= highestPinLed; thisPin++) {
-    pinMode(thisPin, OUTPUT); //initialize thisPin as an output
-  }
-  pinMode(buzzer, OUTPUT); //initialize buzzer as an output
+   sw.begin(9600);
 
-  // Start the serial port
-  Serial.begin(9600);
+  pinMode(buzzer, OUTPUT); //initialize buzzer as an output
   // Tell XBee to use Hardware Serial. It's also possible to use SoftwareSerial
-  xbee.setSerial(Serial);
+  xbee.setSerial(sw);
+  buzzerAlert();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   xbee.readPacket(100);
+  
   if (xbee.getResponse().isAvailable()) {
-
     buzzerAlert();
-
-    ledAlert();
   }
 }
 
@@ -41,29 +35,6 @@ void buzzerAlert() {
 
 }
 
-void ledAlert() {
-  for (int thisPin = lowestPinLed; thisPin <= highestPinLed; thisPin++)
-  {
-    digitalWrite(thisPin, HIGH); //turn this led on
-    delay(100);//wait for 100 microseconds
-  }
-  //fade from the highest to the lowest
-  for (int thisPin = highestPinLed; thisPin >= lowestPinLed; thisPin--)
-  {
-    digitalWrite(thisPin, LOW); //turn this led off
-    delay(100);//wait for 100 microseconds
-  }
-  for (int thisPin = highestPinLed; thisPin >= lowestPinLed; thisPin--)
-  {
-    digitalWrite(thisPin, HIGH); //turn this led on
-    delay(100);//wait for 100 microseconds
-  }
-  for (int thisPin = lowestPinLed; thisPin <= highestPinLed; thisPin++)
-  {
-    digitalWrite(thisPin, LOW); //turn this led off
-    delay(100);//wait for 100 microseconds
-  }
-}
 
 
 
