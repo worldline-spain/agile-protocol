@@ -28,8 +28,8 @@ int no_read_loop =0;
 
 XBee xbee = XBee();
 
-SoftwareSerial sw(9,11);
-SoftwareSerial sw2(5,7);
+SoftwareSerial sw(7,5);
+SoftwareSerial sw2(11,9);
 
 void setup() {
   Serial.begin(9600);
@@ -42,27 +42,27 @@ void setup() {
   delay(100);
   while (sw.available() ) {
      String res = sw.readString();
-     //Serial.println(res);
+     Serial.println(res);
   }
 
   sw.print(F("AT+ROLE1"));
   delay(100);
   while (sw.available() ) {
      String res = sw.readString();
-     //Serial.println(res);
+     Serial.println(res);
   }
  
   sw.print(F("AT+IMME1"));
   delay(100);
   while (sw.available() ) {
      String res = sw.readString();
-     //Serial.println(res);
+     Serial.println(res);
   }
   sw.print(F("AT+RESET"));
   delay(2000);
   while (sw.available() ) {
      String res = sw.readString();
-     //Serial.println(res);
+     Serial.println(res);
   }
 
   delay(20);
@@ -87,7 +87,7 @@ void loop() {
 void startScanning(){
   sw.print(F("AT+DISI?"));
   state= SCANNING;
-  //Serial.println(F("START SCANNING"));
+  Serial.println(F("START SCANNING"));
 }
 
 void processScanning() {
